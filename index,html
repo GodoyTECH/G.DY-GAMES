@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>RP Mobile — Protótipo v1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    body {
+        margin: 0;
+        background: #10131b;
+        color: white;
+        font-family: Arial, sans-serif;
+    }
+    .container {
+        width: 95%;
+        margin: auto;
+        padding: 20px;
+    }
+    .card {
+        background: #1c2130;
+        padding: 20px;
+        margin-top: 20px;
+        border-radius: 12px;
+        border: 1px solid #2e3a55;
+    }
+    input, select {
+        width: 100%;
+        padding: 10px;
+        margin-top: 10px;
+        background: #0e121a;
+        border: 1px solid #4a5a81;
+        border-radius: 8px;
+        color: white;
+    }
+    button {
+        width: 100%;
+        padding: 12px;
+        background: #4cafef;
+        border: none;
+        margin-top: 15px;
+        border-radius: 10px;
+        color: black;
+        font-weight: bold;
+        font-size: 16px;
+    }
+    #gameScreen { display: none; }
+    #chatBox {
+        height: 200px;
+        overflow-y: auto;
+        background: #0b0e14;
+        padding: 10px;
+        border-radius: 10px;
+        margin-top: 10px;
+        font-size: 14px;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- TELA DE CRIAÇÃO DE PERSONAGEM -->
+    <div id="createScreen" class="card">
+        <h2>Criação de Personagem</h2>
+
+        <input id="nome" placeholder="Nome do personagem">
+        <select id="profissao">
+            <option value="Desempregado">Desempregado</option>
+            <option value="PM">Polícia Militar</option>
+            <option value="Mecânico">Mecânico</option>
+            <option value="Paramédico">Paramédico</option>
+            <option value="Taxista">Taxista</option>
+        </select>
+
+        <button onclick="criarPersonagem()">Criar Personagem</button>
+    </div>
+
+    <!-- TELA DO JOGO -->
+    <div id="gameScreen" class="card">
+        <h2>Bem-vindo, <span id="p_nome"></span></h2>
+        <p>Profissão: <span id="p_prof"></span></p>
+        <p>Dinheiro: R$ <span id="p_money"></span></p>
+
+        <button onclick="ganharDinheiro()">Trabalhar + R$100</button>
+
+        <h3>Chat Global</h3>
+        <div id="chatBox"></div>
+        <input id="chatInput" placeholder="Digite sua mensagem..." onkeydown="if(event.key==='Enter') enviarMsg()">
+        <button onclick="enviarMsg()">Enviar</button>
+    </div>
+
+</div>
+
+<script>
+let player = null;
+
+// CARREGAR PLAYER SE EXISTIR
+window.onload = () => {
+    const save = localStorage.getItem("rp_player");
+
+    if (save) {
+        player = JSON.parse(save);
+        abrirGame();
+    }
+};
+
+// CRIAR PERSONAGEM
+function criarPersonagem() {
+    const nome = document.getElementById("nome").value;
+    const prof = document.getElementById("profissao").value;
+
+    if (nome.trim() === "") return alert("Digite um nome!");
+
+    player = {
+        nome: nome,
+        profissao: prof,
+        money: 500,
+        chat: []
+    };
+
+    localStorage.setItem("rp_player", JSON.stringify(player));
+    abrirGame();
+}
+
+// ABRIR GAME
+function abrirGame() {
+    document.getElementById("createScreen").style.display = "none";
+    document.getElementById("gameScreen").style.display = "block";
+
+    document.getElementById("p_nome").innerText = player.nome;
+    document.getElementById("p_prof").innerText = player.profissao;
+    document.getElementById("p_money").innerText = player.money;
+
+    carregarChat();
+}
+
+// GANHAR DINHEIRO
+function ganharDinheiro() {
+    player.money += 100;
+    document.getElementById("p_money").innerText = player.money;
+    salvar();
+}
+
+// CHAT
+function enviarMsg() {
+    const text = document.getElementById("chatInput").value;
+    if (text.trim() === "") return;
+
+    player.chat.push(text);
+    document.getElementById("chatInput").value = "";
+    carregarChat();
+    salvar();
+}
+
+function carregarChat() {
+    const box = document.getElementById("chatBox");
+    box.innerHTML = "";
+
+    player.chat.forEach(msg => {
+        box.innerHTML += `<p><b>${player.nome}:</b> ${msg}</p>`;
+    });
+}
+
+// SALVAR PLAYER
+function salvar() {
+    localStorage.setItem("rp_player", JSON.stringify(player));
+}
+</script>
+
+</body>
+</html>
